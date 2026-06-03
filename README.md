@@ -222,6 +222,6 @@ may obtain a copy of the Terms at
 
 The Protenix project including both code and model parameters is released under the [Apache 2.0 License](https://github.com/bytedance/Protenix/blob/main/LICENSE). It is free for both academic research and commercial use.
 
-## LigandMPNN
+## NA-MPNN
 
-LigandMPNN are under [MIT license](https://github.com/dauparas/LigandMPNN/blob/main/LICENSE)
+NA-MPNN are under [MIT license](https://github.com/baker-laboratory/NA-MPNN/blob/main/LICENSE)
