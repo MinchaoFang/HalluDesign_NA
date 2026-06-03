@@ -1,0 +1,15 @@
+{
+  "name": "halludesign_na_rna_monomer_af3",
+  "sequences": [
+    {
+      "rna": {
+        "id": "A",
+        "sequence": "AUGCAUGCAUGCAUGCAUGC",
+        "unpairedMsa": ""
+      }
+    }
+  ],
+  "modelSeeds": [1],
+  "dialect": "alphafold3",
+  "version": 1
+}

@@ -1,0 +1,14 @@
+{
+  "name": "halludesign_na_dna_monomer_af3",
+  "sequences": [
+    {
+      "dna": {
+        "id": "A",
+        "sequence": "ATGCATGCATGCATGCATGC"
+      }
+    }
+  ],
+  "modelSeeds": [1],
+  "dialect": "alphafold3",
+  "version": 1
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "sequences": [
+      {
+        "dnaSequence": {
+          "sequence": "ATGCATGCATGCATGCATGC",
+          "count": 1
+        }
+      }
+    ],
+    "name": "halludesign_na_dna_monomer_protenix"
+  }
+]

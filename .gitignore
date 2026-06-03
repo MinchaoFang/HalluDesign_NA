@@ -1,0 +1,7 @@
+NA-MPNN/
+__pycache__/
+*/__pycache__/
+*.pyc
+processing_results.csv
+*.lock
+HalluDesign_NA_*/

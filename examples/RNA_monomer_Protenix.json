@@ -1,0 +1,13 @@
+[
+  {
+    "sequences": [
+      {
+        "rnaSequence": {
+          "sequence": "AUGCAUGCAUGCAUGCAUGC",
+          "count": 1
+        }
+      }
+    ],
+    "name": "halludesign_na_rna_monomer_protenix"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "halludesign_na_dna_af3",
+  "sequences": [
+    {
+      "protein": {
+        "id": ["A"],
+        "sequence": "NPYARGPNPTAASLEASAGPFTVRSFTVSRPSGYGAGTVYYPTNAGGTVGAIAIVPGYTARQSSSIKWWGPRLASHGFVVITIDTNSTLDQPSSSRSSQQMAALGQVASLNGTSSSPIYGKVDTARMMGVMGWAMGGGGSLISAANNPSSLKAAAPQAPWDSSTNFSSVTVPTLIFACENDSSIAPVNSSSALPIYDSMSRNAKQFLEINGGSHSCANSGNSNQALIGKKGVAWMKRFMDNDTRYSTFACENPNSTRVSDFRTANCS",
+        "unpairedMsa": "",
+        "pairedMsa": "",
+        "templates": []
+      }
+    },
+    {
+      "dna": {
+        "id": "B",
+        "sequence": "ATGCATGCATGCATGCATGC"
+      }
+    }
+  ],
+  "modelSeeds": [1],
+  "dialect": "alphafold3",
+  "version": 1
+}
