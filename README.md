@@ -81,11 +81,17 @@ NA-MPNN/self-consistency result but does not launch another expensive
 optimization prediction.
 
 For no-PDB random initialization, omit `--input_file/--pdb_list` and provide
-`--random_init_chain_spec`, for example `B:20,C:18-24`. The chain IDs must
-already exist as DNA/RNA chains in the template JSON; this option sets the
-initial random NA sequence length but does not add new chains to the template.
-Cycle 1 is run as pure AF3/Protenix prediction, and later cycles recycle the
-predicted PDB into the normal NA-MPNN/ref-guided loop.
+`--random_init_chain_spec`, for example `A:20`, `A:20-40`, or
+`B:20-40,C:18`. The chain IDs must already exist as DNA/RNA chains in the
+template JSON; this option sets the initial random NA sequence length but does
+not add new chains to the template. Cycle 1 is run as pure AF3/Protenix
+prediction, and later cycles recycle the predicted PDB into the normal
+NA-MPNN/ref-guided loop.
+
+Use `--num_designs` to launch multiple independent no-PDB random-init design
+trajectories in one command. This is different from `--num_seqs`: `--num_seqs`
+controls the number of NA-MPNN candidates evaluated within each cycle, while
+`--num_designs` controls the number of independent final design trajectories.
 
 Useful controls:
 
@@ -96,7 +102,8 @@ Useful controls:
 --symmetry_chains B,C
 --symmetry_segments 3 --symmetry_segment_chain B
 --ref_time_steps 150
---random_init_chain_spec "B:20,C:18-24"
+--random_init_chain_spec "A:20-40"
+--num_designs 20
 ```
 
 `--fix_res_index` and `--redesign_res_index` use PDB-style chain+residue labels
@@ -119,7 +126,8 @@ python ./HalluDesign_NA_run.py \
   --optimizer protenix \
   --template_path examples/RNA_Protenix.json \
   --output_dir examples/HalluDesign_NA_random \
-  --random_init_chain_spec "B:20" \
+  --random_init_chain_spec "B:20-40" \
+  --num_designs 5 \
   --ref_time_steps 150 \
   --num_seqs 8 \
   --num_recycles 10

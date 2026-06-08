@@ -40,7 +40,8 @@ python ./HalluDesign_NA_run.py \
   --optimizer protenix \
   --template_path examples/RNA_Protenix.json \
   --output_dir examples/HalluDesign_NA_random \
-  --random_init_chain_spec "B:20" \
+  --random_init_chain_spec "B:20-40" \
+  --num_designs 5 \
   --ref_time_steps 150 \
   --num_seqs 8 \
   --num_recycles 10

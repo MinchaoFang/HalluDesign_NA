@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -32,6 +33,14 @@ from na_sequence_utils import (
 )
 
 
+@dataclass(frozen=True)
+class DesignJob:
+    input_path: str | None
+    file_tag: str
+    design_index: int
+    seed: int
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Run HalluDesign_NA with NA-MPNN and AF3/Protenix."
@@ -42,6 +51,15 @@ def parse_args():
     parser.add_argument("--template_path", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--num_seqs", type=int, default=8)
+    parser.add_argument(
+        "--num_designs",
+        type=int,
+        default=1,
+        help=(
+            "Number of independent no-PDB random-init design trajectories. "
+            "Only used without --input_file/--pdb_list."
+        ),
+    )
     parser.add_argument("--num_recycles", type=int, default=10)
     parser.add_argument("--design_epoch_begin", type=int, default=0)
     parser.add_argument(
@@ -60,7 +78,7 @@ def parse_args():
         "--random_init_chain_spec",
         type=str,
         default="",
-        help="NA chain length spec for no-PDB random init, e.g. B:20-24,C:18.",
+        help="NA chain length spec for no-PDB random init, e.g. A:20 or B:20-40,C:18.",
     )
     parser.add_argument(
         "--fix_res_index",
@@ -105,22 +123,50 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_pdb_files(args) -> list[str | None]:
+def load_design_jobs(args) -> list[DesignJob]:
+    if args.num_designs < 1:
+        raise ValueError("--num_designs must be at least 1.")
     if args.input_file and args.pdb_list:
         raise ValueError("Cannot specify both --input_file and --pdb_list.")
+    if args.num_designs != 1 and (args.input_file or args.pdb_list):
+        raise ValueError("--num_designs is only supported for no-PDB random init.")
     if args.random_init_chain_spec and (args.input_file or args.pdb_list):
         raise ValueError(
             "--random_init_chain_spec is for no-PDB random init; do not combine it "
             "with --input_file or --pdb_list."
         )
     if args.input_file:
-        return [args.input_file]
+        return [
+            DesignJob(
+                input_path=args.input_file,
+                file_tag=Path(args.input_file).stem.lower(),
+                design_index=0,
+                seed=args.seed,
+            )
+        ]
     if args.pdb_list:
         with open(args.pdb_list, "r") as handle:
-            return [line.strip() for line in handle if line.strip()]
+            pdb_files = [line.strip() for line in handle if line.strip()]
+        return [
+            DesignJob(
+                input_path=pdb_file,
+                file_tag=Path(pdb_file).stem.lower(),
+                design_index=index,
+                seed=args.seed,
+            )
+            for index, pdb_file in enumerate(pdb_files)
+        ]
     if args.random_init_chain_spec:
         args.random_init = True
-        return [None]
+        return [
+            DesignJob(
+                input_path=None,
+                file_tag=f"random_init_{index + 1:03d}",
+                design_index=index,
+                seed=args.seed + index,
+            )
+            for index in range(args.num_designs)
+        ]
     raise ValueError("Specify either --input_file or --pdb_list.")
 
 
@@ -180,6 +226,8 @@ def main():
             "Use only one of --symmetry_residues, --symmetry_chains, or --symmetry_segments."
         )
 
+    design_jobs = load_design_jobs(args)
+
     from na_mpnn_wrapper import NAMPNNDesigner
 
     na_designer = NAMPNNDesigner(
@@ -191,10 +239,13 @@ def main():
     csv_path = os.path.join(args.output_dir, "processing_results.csv")
     lock = FileLock(f"{csv_path}.lock")
 
-    for pdb_file in load_pdb_files(args):
-        current_input = pdb_file
-        file_tag = Path(pdb_file).stem.lower() if pdb_file else "random_init"
-        print(f"Processing {pdb_file if pdb_file else 'no-PDB random initialization'}")
+    for job in design_jobs:
+        current_input = job.input_path
+        print(
+            "Processing "
+            f"{job.input_path if job.input_path else 'no-PDB random initialization'} "
+            f"as {job.file_tag}"
+        )
         for cycle in range(args.num_recycles):
             print(f"Starting NA design cycle {cycle + 1}")
             design_begin = cycle >= args.design_epoch_begin
@@ -204,7 +255,7 @@ def main():
                 current_input=current_input,
                 cycle=cycle,
                 output_dir=args.output_dir,
-                file_tag=file_tag,
+                file_tag=job.file_tag,
                 specs=specs,
                 na_designer=na_designer,
                 backend=backend,
@@ -219,11 +270,14 @@ def main():
                 symmetry_segments=args.symmetry_segments,
                 symmetry_segment_chain=args.symmetry_segment_chain,
                 ref_time_steps=args.ref_time_steps,
-                seed=args.seed,
+                seed=job.seed,
                 random_init=args.random_init,
                 random_init_chain_ranges=random_init_chain_ranges,
                 run_optimization=(cycle != args.num_recycles - 1) or no_pdb_start,
             )
+            for metric in metrics:
+                metric["design_index"] = job.design_index
+                metric["design_tag"] = job.file_tag
             append_metrics(csv_path, metrics, lock)
             current_input = next_input
 
